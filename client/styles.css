@@ -212,12 +212,14 @@ main {
   color: var(--muted);
 }
 
+.key-choice,
 .font-choice {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
+.key-choice select,
 .font-choice select {
   padding: 7px 10px;
   border: 1px solid var(--border);

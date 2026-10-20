@@ -11,7 +11,7 @@ const COMBINED = new Map([
 ]);
 const SPLIT = new Map([...COMBINED].map(([pair, glyph]) => [glyph, pair]));
 
-export const COMBINED_SETS = ['aa', 'ab', 'ac'];
+const COMBINED_SETS = ['aa', 'ab', 'ac'];
 
 const swap = (text, map) => text.replace(/[/\\]./g, (pair) => map.get(pair) ?? pair);
 

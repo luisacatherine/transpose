@@ -1,5 +1,5 @@
 import { toSet } from '../client/glyphs.js';
-import { AlignmentType, BorderStyle, Document, Packer, Paragraph, TextRun } from 'docx';
+import { BorderStyle, Document, Packer, Paragraph, TextRun } from 'docx';
 
 // the song fonts must be installed where the .docx is opened (same as when typing scores by hand)
 // family names as installed (the ab and ac sets reuse the aa beat-line font)

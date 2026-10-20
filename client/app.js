@@ -1,4 +1,5 @@
 import { toSet } from './glyphs.js';
+import { KEYS, transposeLines } from './transpose.js';
 
 const dropzone = document.getElementById('dropzone');
 const fileInput = document.getElementById('file-input');
@@ -15,14 +16,26 @@ const fontChoice = document.getElementById('font-choice');
 const fontSet = document.getElementById('font-set');
 const wordOptions = document.getElementById('word-options');
 const wordSize = document.getElementById('word-size');
+const keyFrom = document.getElementById('key-from');
+const keyTo = document.getElementById('key-to');
 const resultSection = document.getElementById('result-section');
 const resultStatus = document.getElementById('result-status');
 const resultText = document.getElementById('result-text');
 
 let currentUrl = null;
 let currentFile = null;
-let extractedText = '';
 let extractedLines = [];
+
+for (const select of [keyFrom, keyTo]) {
+  select.append(new Option('—', ''));
+  for (const { value, name } of KEYS) select.append(new Option(name, value));
+}
+
+// the score with the chosen transposition applied; unchanged while either key is unset
+function currentLines() {
+  const key = (select) => (select.value === '' ? '' : Number(select.value));
+  return transposeLines(extractedLines, key(keyFrom), key(keyTo));
+}
 
 function showError(message) {
   errorEl.textContent = message;
@@ -102,7 +115,7 @@ clearBtn.addEventListener('click', clearViewer);
 
 // the song fonts reuse ordinary letters, so each kind of row gets its own font
 function renderLines() {
-  resultText.replaceChildren(...extractedLines.map(({ text, kind, label }) => {
+  resultText.replaceChildren(...currentLines().map(({ text, kind, label }) => {
     const row = document.createElement('div');
     row.className = `row ${kind}`; // notes: adangka, garis: adgaris, lyrics: adhuruf
     if (label !== undefined) {
@@ -150,7 +163,6 @@ async function convertToText() {
     if (!res.ok) throw new Error(data.message || 'Conversion failed.');
     if (file !== currentFile) return; // file was replaced or removed meanwhile
 
-    extractedText = data.text;
     const lines = data.lines ?? data.text.split('\n').map((text) => ({ text, kind: 'text' }));
     extractedLines = lines;
     renderLines();
@@ -170,7 +182,9 @@ async function convertToText() {
 
 async function copyText() {
   try {
-    await navigator.clipboard.writeText(extractedText);
+    await navigator.clipboard.writeText(
+      currentLines().filter((l) => l.kind !== 'rule').map((l) => l.text).join('\n').trim(),
+    );
     copyBtn.textContent = 'Copied!';
   } catch {
     copyBtn.textContent = 'Copy failed';
@@ -185,7 +199,7 @@ async function saveAsWord(event) {
     const res = await fetch('/export-docx', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ lines: extractedLines, fontSize: Number(wordSize.value), fontSet: fontSet.value }),
+      body: JSON.stringify({ lines: currentLines(), fontSize: Number(wordSize.value), fontSet: fontSet.value }),
     });
     if (!res.ok) throw new Error((await res.json()).message || `HTTP ${res.status}`);
     const url = URL.createObjectURL(await res.blob());
@@ -204,6 +218,7 @@ async function saveAsWord(event) {
 
 convertBtn.addEventListener('click', convertToText);
 fontSet.addEventListener('change', renderLines);
+for (const select of [keyFrom, keyTo]) select.addEventListener('change', () => extractedLines.length && renderLines());
 wordBtn.addEventListener('click', () => {
   wordOptions.hidden = !wordOptions.hidden;
   if (!wordOptions.hidden) wordSize.focus();
