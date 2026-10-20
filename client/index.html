@@ -42,6 +42,14 @@
       <div class="viewer-bar">
         <h2>Extracted text</h2>
         <div class="viewer-actions">
+          <label class="font-choice" id="font-choice" hidden>Font
+            <select id="font-set">
+              <option value="aa">aa</option>
+              <option value="ab">ab</option>
+              <option value="ac">ac</option>
+              <option value="ad" selected>ad</option>
+            </select>
+          </label>
           <button id="word-btn" class="btn" type="button" hidden>Save as Word</button>
           <button id="copy-btn" class="btn" type="button" hidden>Copy</button>
         </div>
@@ -56,6 +64,6 @@
     </section>
   </main>
 
-  <script src="app.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>

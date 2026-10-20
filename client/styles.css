@@ -13,6 +13,51 @@
   src: url("/fonts/adangka.ttf") format("truetype");
 }
 
+@font-face {
+  font-family: "aaangka";
+  src: url("/fonts/AA-ANGKA.TTF") format("truetype");
+}
+
+@font-face {
+  font-family: "aagaris";
+  src: url("/fonts/AA-GARIS.TTF") format("truetype");
+}
+
+@font-face {
+  font-family: "aahuruf";
+  src: url("/fonts/AA-HURUF.TTF") format("truetype");
+}
+
+@font-face {
+  font-family: "abangka";
+  src: url("/fonts/AB-ANGKA2.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "abgaris";
+  src: url("/fonts/AB-GARIS.TTF") format("truetype");
+}
+
+@font-face {
+  font-family: "abhuruf";
+  src: url("/fonts/AB-HURUF.TTF") format("truetype");
+}
+
+@font-face {
+  font-family: "acangka";
+  src: url("/fonts/AC-ANGKA.TTF") format("truetype");
+}
+
+@font-face {
+  font-family: "acgaris";
+  src: url("/fonts/AA-GARIS.TTF") format("truetype");
+}
+
+@font-face {
+  font-family: "achuruf";
+  src: url("/fonts/AC-HURUF.TTF") format("truetype");
+}
+
 :root {
   --bg: #faf8f5;
   --surface: #ffffff;
@@ -161,10 +206,25 @@ main {
 .result-text .label {
   flex: 0 0 2.5ch;
   margin-right: 1ch;
-  font-family: "adhuruf", monospace;
+  font-family: var(--lyrics), monospace;
   font-size: 1.1rem;
   line-height: 1.1;
   color: var(--muted);
+}
+
+.font-choice {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.font-choice select {
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
 }
 
 .word-options {
@@ -192,9 +252,14 @@ main {
 
 .result-text .rule span { display: none; }
 
-.result-text .notes { font-family: "adangka", monospace; }
-.result-text .garis { font-family: "adgaris", monospace; }
-.result-text .lyrics { font-family: "adhuruf", monospace; }
+.result-text { --notes: "adangka"; --garis: "adgaris"; --lyrics: "adhuruf"; }
+.result-text[data-font="aa"] { --notes: "aaangka"; --garis: "aagaris"; --lyrics: "aahuruf"; }
+.result-text[data-font="ab"] { --notes: "abangka"; --garis: "abgaris"; --lyrics: "abhuruf"; }
+.result-text[data-font="ac"] { --notes: "acangka"; --garis: "acgaris"; --lyrics: "achuruf"; }
+
+.result-text .notes { font-family: var(--notes), monospace; }
+.result-text .garis { font-family: var(--garis), monospace; }
+.result-text .lyrics { font-family: var(--lyrics), monospace; }
 
 .result-text {
   margin: 0;

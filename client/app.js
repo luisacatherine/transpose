@@ -1,3 +1,5 @@
+import { toSet } from './glyphs.js';
+
 const dropzone = document.getElementById('dropzone');
 const fileInput = document.getElementById('file-input');
 const errorEl = document.getElementById('error');
@@ -9,6 +11,8 @@ const clearBtn = document.getElementById('clear-btn');
 const convertBtn = document.getElementById('convert-btn');
 const copyBtn = document.getElementById('copy-btn');
 const wordBtn = document.getElementById('word-btn');
+const fontChoice = document.getElementById('font-choice');
+const fontSet = document.getElementById('font-set');
 const wordOptions = document.getElementById('word-options');
 const wordSize = document.getElementById('word-size');
 const resultSection = document.getElementById('result-section');
@@ -96,6 +100,26 @@ dropzone.addEventListener('drop', (e) => {
 
 clearBtn.addEventListener('click', clearViewer);
 
+// the song fonts reuse ordinary letters, so each kind of row gets its own font
+function renderLines() {
+  resultText.replaceChildren(...extractedLines.map(({ text, kind, label }) => {
+    const row = document.createElement('div');
+    row.className = `row ${kind}`; // notes: adangka, garis: adgaris, lyrics: adhuruf
+    if (label !== undefined) {
+      // rows of a score: voice (S, A, T, B) or lyrics (K, U) label in a gutter beside the row
+      const tag = document.createElement('span');
+      tag.className = 'label';
+      tag.textContent = label;
+      row.append(tag);
+    }
+    const line = document.createElement('span');
+    line.textContent = (kind === 'notes' ? toSet(text, fontSet.value) : text) || '\u00a0';
+    row.append(line);
+    return row;
+  }));
+  resultText.dataset.font = fontSet.value;
+}
+
 async function convertToText() {
   if (!currentFile) return;
   const file = currentFile;
@@ -106,6 +130,7 @@ async function convertToText() {
   resultText.hidden = true;
   copyBtn.hidden = true;
   wordBtn.hidden = true;
+  fontChoice.hidden = true;
   wordOptions.hidden = true;
   convertBtn.disabled = true;
 
@@ -126,28 +151,15 @@ async function convertToText() {
     if (file !== currentFile) return; // file was replaced or removed meanwhile
 
     extractedText = data.text;
-    // the song fonts reuse ordinary letters, so each kind of row gets its own font
     const lines = data.lines ?? data.text.split('\n').map((text) => ({ text, kind: 'text' }));
     extractedLines = lines;
-    resultText.replaceChildren(...lines.map(({ text, kind, label }) => {
-      const row = document.createElement('div');
-      row.className = `row ${kind}`; // notes: adangka, garis: adgaris, lyrics: adhuruf
-      if (label !== undefined) {
-        // rows of a score: voice (S, A, T, B) or lyrics (K, U) label in a gutter beside the row
-        const tag = document.createElement('span');
-        tag.className = 'label';
-        tag.textContent = label;
-        row.append(tag);
-      }
-      const line = document.createElement('span');
-      line.textContent = text || '\u00a0';
-      row.append(line);
-      return row;
-    }));
+    renderLines();
+    resultText.dataset.font = fontSet.value;
     resultText.hidden = false;
     resultStatus.hidden = true;
     copyBtn.hidden = false;
     wordBtn.hidden = false;
+    fontChoice.hidden = false;
   } catch (err) {
     if (file !== currentFile) return;
     resultStatus.textContent = `Error: ${err.message}`;
@@ -173,7 +185,7 @@ async function saveAsWord(event) {
     const res = await fetch('/export-docx', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ lines: extractedLines, fontSize: Number(wordSize.value) }),
+      body: JSON.stringify({ lines: extractedLines, fontSize: Number(wordSize.value), fontSet: fontSet.value }),
     });
     if (!res.ok) throw new Error((await res.json()).message || `HTTP ${res.status}`);
     const url = URL.createObjectURL(await res.blob());
@@ -191,6 +203,7 @@ async function saveAsWord(event) {
 }
 
 convertBtn.addEventListener('click', convertToText);
+fontSet.addEventListener('change', renderLines);
 wordBtn.addEventListener('click', () => {
   wordOptions.hidden = !wordOptions.hidden;
   if (!wordOptions.hidden) wordSize.focus();

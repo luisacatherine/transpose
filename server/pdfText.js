@@ -3,6 +3,8 @@
 
 import { OPS } from 'pdfjs-dist/legacy/build/pdf.mjs';
 
+import { fromCombined } from '../client/glyphs.js';
+
 const KINDS = [
     [/angka/i, 'notes'],
     [/garis/i, 'garis'],
@@ -54,7 +56,9 @@ async function pageItems(page) {
         .map((it) => {
             const font = page.commonObjs.get(it.fontName)?.name ?? '';
             const kind = KINDS.find(([re]) => re.test(font))?.[1] ?? 'text';
-            return { str: it.str, x: it.transform[4], y: it.transform[5], size: it.transform[0], width: it.width, kind };
+            // aa/ab/ac note fonts spell sharps and flats as capitals; keep the ad spelling internally
+            const str = kind === 'notes' && /^(?:[A-Z]{6}\+)?a[abc]angka/i.test(font) ? fromCombined(it.str) : it.str;
+            return { str, x: it.transform[4], y: it.transform[5], size: it.transform[0], width: it.width, kind };
         });
 }
 

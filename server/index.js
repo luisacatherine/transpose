@@ -6,7 +6,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { PDFParse } from 'pdf-parse';
 import { readPdfScore } from './pdfText.js';
-import { DEFAULT_SIZE, linesToDocx } from './docxExport.js';
+import { DEFAULT_SET, DEFAULT_SIZE, FONT_SETS, linesToDocx } from './docxExport.js';
 import { createWorker, PSM } from 'tesseract.js';
 import sharp from 'sharp';
 import { analyzePage, readRow, layoutSystem } from './notation.js';
@@ -131,6 +131,29 @@ function fixBarLines(text) {
     }).join('\n');
 }
 
+const NOT_A_SCORE = 'No numbered notation found. Please upload a PDF or image of an angka score.';
+// scale degrees 1-7, plain or as the font's dotted letters; 0s and bar lines alone also come out of ordinary pictures
+const MIN_NOTES = 4;
+const hasNotation = (lines) => {
+    const notes = lines.filter((l) => l.kind === 'notes').map((l) => l.text).join('');
+    return (notes.match(/[1-7asdfghjqwertyui]/g) ?? []).length >= MIN_NOTES;
+};
+
+// every notes row gets a beat-line row above it and a legato row below it, blank when the score has none,
+// so each system takes the same vertical space
+function padSystems(lines) {
+    const blank = (like) => ({ text: '', kind: 'garis', ...(like.label !== undefined && { label: '' }) });
+    const out = [];
+    lines.forEach((line, i) => {
+        const prev = lines[i - 1];
+        const next = lines[i + 1];
+        if (line.kind === 'notes' && prev?.kind !== 'garis') out.push(blank(line));
+        out.push(line);
+        if (line.kind === 'notes' && next?.kind !== 'garis') out.push(blank(line));
+    });
+    return out;
+}
+
 const PORT = process.env.PORT || 3001;
 
 app.use(cors())
@@ -148,8 +171,11 @@ app.post('/generate-from-document', upload.single("document"), async (req, res) 
             const parser = new PDFParse({ data: new Uint8Array(buffer) });
             try {
                 // scores typeset with the angka fonts carry exact characters in the text layer
-                const embedded = await readPdfScore(await parser.load());
-                if (embedded) return res.status(200).json({ text: embedded.filter((l) => l.kind !== 'rule').map((l) => l.text).join('\n').trim(), lines: embedded })
+                const score = await readPdfScore(await parser.load());
+                if (score) {
+                    const embedded = padSystems(score);
+                    return res.status(200).json({ text: embedded.filter((l) => l.kind !== 'rule').map((l) => l.text).join('\n').trim(), lines: embedded })
+                }
 
                 // otherwise render each page and read it like an uploaded image
                 const { pages } = await parser.getScreenshot({ desiredWidth: 2400, imageDataUrl: false });
@@ -158,7 +184,9 @@ app.post('/generate-from-document', upload.single("document"), async (req, res) 
                     if (lines.length) lines.push({ text: '', kind: 'text' });
                     lines.push(...await recognizeImage(Buffer.from(page.data)));
                 }
-                return res.status(200).json({ text: lines.map((l) => l.text).join('\n').trim(), lines })
+                if (!hasNotation(lines)) return res.status(422).json({ message: NOT_A_SCORE })
+                const padded = padSystems(lines);
+                return res.status(200).json({ text: padded.map((l) => l.text).join('\n').trim(), lines: padded })
             } finally {
                 await parser.destroy();
             }
@@ -167,7 +195,9 @@ app.post('/generate-from-document', upload.single("document"), async (req, res) 
         if (mimetype.startsWith('image/')) {
             // notation lines use the adangka font's letters for octave dots, so the client styles them separately
             const lines = await recognizeImage(buffer);
-            return res.status(200).json({ text: lines.map((l) => l.text).join('\n').trim(), lines })
+            if (!hasNotation(lines)) return res.status(422).json({ message: NOT_A_SCORE })
+            const padded = padSystems(lines);
+            return res.status(200).json({ text: padded.map((l) => l.text).join('\n').trim(), lines: padded })
         }
 
         res.status(415).json({ message: 'Unsupported file type. Please upload a PDF or an image.' })
@@ -176,11 +206,12 @@ app.post('/generate-from-document', upload.single("document"), async (req, res) 
     }
 })
 app.post('/export-docx', async (req, res) => {
-    const { lines, fontSize = DEFAULT_SIZE } = req.body;
+    const { lines, fontSize = DEFAULT_SIZE, fontSet = DEFAULT_SET } = req.body;
     if (!Array.isArray(lines)) return res.status(400).json({ message: 'No lines to export.' });
     if (!(fontSize >= 6 && fontSize <= 48)) return res.status(400).json({ message: 'Font size must be between 6 and 48.' });
+    if (!Object.hasOwn(FONT_SETS, fontSet)) return res.status(400).json({ message: 'Unknown font set.' });
     try {
-        const buffer = await linesToDocx(lines, Number(fontSize));
+        const buffer = await linesToDocx(lines, Number(fontSize), fontSet);
         res.type('application/vnd.openxmlformats-officedocument.wordprocessingml.document')
             .set('Content-Disposition', 'attachment; filename="score.docx"')
             .send(buffer);
