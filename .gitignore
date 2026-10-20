@@ -1,0 +1,19 @@
+# dependencies
+node_modules/
+
+# secrets and local config
+.env
+.env.*
+!.env.example
+
+# tesseract.js downloads language models into the working directory
+*.traineddata
+
+# logs
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

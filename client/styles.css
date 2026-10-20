@@ -1,0 +1,211 @@
+@font-face {
+  font-family: "adhuruf";
+  src: url("/fonts/adhuruf.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "adgaris";
+  src: url("/fonts/adgaris.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "adangka";
+  src: url("/fonts/adangka.ttf") format("truetype");
+}
+
+:root {
+  --bg: #faf8f5;
+  --surface: #ffffff;
+  --text: #1f1d1a;
+  --muted: #6b665f;
+  --accent: #5b3df5;
+  --border: #d9d4cc;
+  --error: #c0392b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14130f;
+    --surface: #1e1c18;
+    --text: #f2efe9;
+    --muted: #a39d93;
+    --accent: #8b75ff;
+    --border: #3a362f;
+    --error: #ff7b6b;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.5;
+}
+
+.site-header {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.logo { font-weight: 700; font-size: 1.2rem; }
+
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 16px 64px;
+}
+
+.hero { text-align: center; padding: 64px 0 32px; }
+.hero h1 { font-size: clamp(1.8rem, 5vw, 3rem); margin: 0 0 12px; }
+.hero p { color: var(--muted); margin: 0; font-size: 1.1rem; }
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 48px 24px;
+  background: var(--surface);
+  border: 2px dashed var(--border);
+  border-radius: 16px;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.dropzone:hover,
+.dropzone:focus-visible,
+.dropzone.is-dragover {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.dropzone-icon { font-size: 2rem; color: var(--accent); }
+.dropzone-title { font-weight: 600; }
+.dropzone-hint { color: var(--muted); font-size: 0.9rem; }
+
+.error { color: var(--error); text-align: center; margin: 12px 0 0; }
+
+.viewer-section { margin-top: 32px; }
+
+.viewer-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.file-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn {
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.btn:hover { border-color: var(--accent); }
+
+.viewer {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.viewer img { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+
+.viewer iframe {
+  display: block;
+  width: 100%;
+  height: 80vh;
+  border: 0;
+}
+
+.viewer-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.btn:disabled { opacity: 0.6; cursor: wait; }
+
+.result-section { margin-top: 32px; }
+.result-section h2 { margin: 0; font-size: 1.2rem; }
+.result-status { color: var(--muted); }
+
+.result-text .notes,
+.result-text .garis,
+.result-text .lyrics {
+  font-size: 1.6rem;
+  line-height: 1.1;
+  white-space: pre;
+}
+
+.result-text .row { display: flex; }
+
+.result-text .label {
+  flex: 0 0 2.5ch;
+  margin-right: 1ch;
+  font-family: "adhuruf", monospace;
+  font-size: 1.1rem;
+  line-height: 1.1;
+  color: var(--muted);
+}
+
+.word-options {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.word-options input {
+  width: 5rem;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
+.result-text .rule {
+  height: 0;
+  margin: 0.6rem 0;
+  border-top: 1px solid var(--text);
+}
+
+.result-text .rule span { display: none; }
+
+.result-text .notes { font-family: "adangka", monospace; }
+.result-text .garis { font-family: "adgaris", monospace; }
+.result-text .lyrics { font-family: "adhuruf", monospace; }
+
+.result-text {
+  margin: 0;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto; /* aligned song rows are as wide as the score */
+  font: inherit;
+}
+
+[hidden] { display: none !important; }

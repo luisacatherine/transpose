@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Transposer</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <span class="logo">♯ Transposer</span>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Transpose your sheet music, effortlessly.</h1>
+      <p>Upload a PDF or image of your score to get started.</p>
+    </section>
+
+    <section class="upload-section">
+      <label id="dropzone" class="dropzone" for="file-input" tabindex="0">
+        <input id="file-input" type="file" accept="application/pdf,image/*" hidden />
+        <span class="dropzone-icon" aria-hidden="true">⬆</span>
+        <span class="dropzone-title">Drop a file here or click to browse</span>
+        <span class="dropzone-hint">PDF, PNG, JPG, WEBP</span>
+      </label>
+      <p id="error" class="error" role="alert" hidden></p>
+    </section>
+
+    <section id="viewer-section" class="viewer-section" hidden>
+      <div class="viewer-bar">
+        <span id="file-name" class="file-name"></span>
+        <div class="viewer-actions">
+          <button id="convert-btn" class="btn btn-primary" type="button">Convert to text</button>
+          <button id="clear-btn" class="btn" type="button">Remove</button>
+        </div>
+      </div>
+      <div id="viewer" class="viewer"></div>
+    </section>
+
+    <section id="result-section" class="result-section" hidden>
+      <div class="viewer-bar">
+        <h2>Extracted text</h2>
+        <div class="viewer-actions">
+          <button id="word-btn" class="btn" type="button" hidden>Save as Word</button>
+          <button id="copy-btn" class="btn" type="button" hidden>Copy</button>
+        </div>
+      </div>
+      <form id="word-options" class="word-options" hidden>
+        <label for="word-size">Font size (pt)</label>
+        <input id="word-size" type="number" min="6" max="48" step="0.5" value="12" required />
+        <button class="btn btn-primary" type="submit">Download .docx</button>
+      </form>
+      <p id="result-status" class="result-status" hidden>Converting…</p>
+      <pre id="result-text" class="result-text" hidden></pre>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
